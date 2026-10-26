@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastenerFlow.Api", "FastenerFlow.Api\FastenerFlow.Api.csproj", "{58756F93-EA79-43FF-B075-3D915D85A1BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastenerFlow.Core", "FastenerFlow.Core\FastenerFlow.Core.csproj", "{40D32680-315D-4C8E-8A4A-77FF7FA4F5A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastenerFlow.MockErp", "FastenerFlow.MockErp\FastenerFlow.MockErp.csproj", "{F3AC39A1-1298-4CA1-8EA0-BC6137B16CF3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastenerFlow.Tests", "FastenerFlow.Tests\FastenerFlow.Tests.csproj", "{A12F9C5A-8D8B-41CD-9CE7-B2FE63B43EAA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{58756F93-EA79-43FF-B075-3D915D85A1BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58756F93-EA79-43FF-B075-3D915D85A1BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58756F93-EA79-43FF-B075-3D915D85A1BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58756F93-EA79-43FF-B075-3D915D85A1BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40D32680-315D-4C8E-8A4A-77FF7FA4F5A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40D32680-315D-4C8E-8A4A-77FF7FA4F5A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40D32680-315D-4C8E-8A4A-77FF7FA4F5A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40D32680-315D-4C8E-8A4A-77FF7FA4F5A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3AC39A1-1298-4CA1-8EA0-BC6137B16CF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3AC39A1-1298-4CA1-8EA0-BC6137B16CF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3AC39A1-1298-4CA1-8EA0-BC6137B16CF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3AC39A1-1298-4CA1-8EA0-BC6137B16CF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A12F9C5A-8D8B-41CD-9CE7-B2FE63B43EAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A12F9C5A-8D8B-41CD-9CE7-B2FE63B43EAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A12F9C5A-8D8B-41CD-9CE7-B2FE63B43EAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A12F9C5A-8D8B-41CD-9CE7-B2FE63B43EAA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
