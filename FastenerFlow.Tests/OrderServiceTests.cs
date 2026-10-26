@@ -171,4 +171,70 @@ public class OrderServiceTests
         var unchangedProduct = await productRepository.GetByIdAsync(product.Id);
         Assert.Equal(5, unchangedProduct!.Quantity);
     }
+
+    [Fact]
+    public async Task CreateOrder_RepeatedProductLines_AggregatesQuantities()
+    {
+        using var context = GetInMemoryContext();
+        var product = new Product
+        {
+            Sku = "DUP-001",
+            Name = "Hex Bolt",
+            Category = "Bolts",
+            UnitPrice = 1.25m,
+            Quantity = 12,
+            ReorderLevel = 2
+        };
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+
+        var service = new OrderService(
+            new OrderRepository(context), new ProductRepository(context), context);
+
+        var order = await service.CreateOrderAsync(new CreateOrderDto
+        {
+            OrderItems = new List<CreateOrderItemDto>
+            {
+                new() { ProductId = product.Id, Quantity = 3 },
+                new() { ProductId = product.Id, Quantity = 4 }
+            }
+        });
+
+        Assert.Single(order.OrderItems);
+        Assert.Equal(7, order.OrderItems[0].Quantity);
+        Assert.Equal(5, product.Quantity);
+    }
+
+    [Fact]
+    public async Task CreateOrder_RepeatedProductLinesCannotExceedStock()
+    {
+        using var context = GetInMemoryContext();
+        var product = new Product
+        {
+            Sku = "DUP-002",
+            Name = "Hex Nut",
+            Category = "Nuts",
+            UnitPrice = 0.25m,
+            Quantity = 6,
+            ReorderLevel = 2
+        };
+        context.Products.Add(product);
+        await context.SaveChangesAsync();
+
+        var service = new OrderService(
+            new OrderRepository(context), new ProductRepository(context), context);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.CreateOrderAsync(new CreateOrderDto
+            {
+                OrderItems = new List<CreateOrderItemDto>
+                {
+                    new() { ProductId = product.Id, Quantity = 4 },
+                    new() { ProductId = product.Id, Quantity = 4 }
+                }
+            }));
+
+        Assert.Equal(6, product.Quantity);
+        Assert.Empty(context.Orders);
+    }
 }
