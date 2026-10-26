@@ -1,3 +1,4 @@
+using System.Data;
 using FastenerFlow.Core.Data;
 using FastenerFlow.Core.DTOs;
 using FastenerFlow.Core.Models;
@@ -36,7 +37,27 @@ public class OrderService : IOrderService
 
     public async Task<OrderDto> CreateOrderAsync(CreateOrderDto orderDto)
     {
-        using var transaction = await _context.Database.BeginTransactionAsync();
+        if (orderDto.OrderItems == null || orderDto.OrderItems.Count == 0)
+            throw new ArgumentException("Order must contain at least one item.");
+
+        if (orderDto.OrderItems.Any(i => i.ProductId <= 0 || i.Quantity <= 0))
+            throw new ArgumentException("Order product IDs and quantities must be positive.");
+
+        // Group repeated product IDs before checking stock to avoid split-line
+        // requests bypassing quantity validation.
+        var requested = orderDto.OrderItems
+            .GroupBy(i => i.ProductId)
+            .Select(g => new { ProductId = g.Key, Quantity = g.Sum(i => (long)i.Quantity) })
+            .OrderBy(i => i.ProductId)
+            .ToList();
+
+        if (requested.Any(i => i.Quantity > int.MaxValue))
+            throw new ArgumentException("Requested quantity exceeds the supported range.");
+
+        // On SQL Server, serializable isolation prevents another checkout from
+        // successfully reading and consuming the same stock concurrently.
+        // Deadlocks may abort a checkout; the caller can retry that request.
+        await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
         try
         {
             var order = new Order
@@ -45,41 +66,29 @@ public class OrderService : IOrderService
                 Status = "Pending"
             };
 
-            foreach (var itemDto in orderDto.OrderItems)
+            foreach (var item in requested)
             {
-                if (itemDto.Quantity <= 0)
-                {
-                    throw new ArgumentException("Order quantity must be positive.");
-                }
-
-                var product = await _productRepository.GetByIdAsync(itemDto.ProductId);
+                var product = await _productRepository.GetByIdAsync(item.ProductId);
                 if (product == null)
-                {
-                    throw new ArgumentException($"Product with ID {itemDto.ProductId} not found.");
-                }
+                    throw new ArgumentException($"Product with ID {item.ProductId} not found.");
 
-                if (product.Quantity < itemDto.Quantity)
-                {
+                if (product.Quantity < item.Quantity)
                     throw new InvalidOperationException(
-                        $"Insufficient stock for product {product.Name}. Available: {product.Quantity}, Requested: {itemDto.Quantity}");
-                }
+                        $"Insufficient stock for product {product.Name}. Available: {product.Quantity}, Requested: {item.Quantity}");
 
-                var orderItem = new OrderItem
+                order.OrderItems.Add(new OrderItem
                 {
-                    ProductId = itemDto.ProductId,
-                    Quantity = itemDto.Quantity,
+                    ProductId = product.Id,
+                    Product = product,
+                    Quantity = (int)item.Quantity,
                     UnitPrice = product.UnitPrice
-                };
+                });
 
-                order.OrderItems.Add(orderItem);
-
-                product.Quantity -= itemDto.Quantity;
-                _context.Products.Update(product);
+                product.Quantity -= (int)item.Quantity;
             }
 
             var createdOrder = await _orderRepository.AddAsync(order);
             await transaction.CommitAsync();
-
             return MapToDto(createdOrder);
         }
         catch
